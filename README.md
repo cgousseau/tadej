@@ -29,6 +29,10 @@ uvicorn app.main:app --reload
 
 L'API est disponible sur http://127.0.0.1:8000. La documentation interactive est sur http://127.0.0.1:8000/docs.
 
+### Déploiement sur Render
+
+Le fichier `render.yaml` configure automatiquement la commande de démarrage et le port fourni par Render. Pour utiliser une autre instance Overpass si l'instance par défaut est indisponible, définir la variable d'environnement `OVERPASS_URL` avec son URL `/api/interpreter`.
+
 ## Routes
 
 - `GET /health` : vérifier que l'API fonctionne

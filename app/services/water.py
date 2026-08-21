@@ -1,3 +1,4 @@
+import os
 from typing import Any
 
 import requests
@@ -8,12 +9,12 @@ def query_overpass_water(points: list[dict[str, float]], radius_m: int) -> list[
         f'node["amenity"="drinking_water"](around:{radius_m},{point["lat"]},{point["lon"]});'
         for point in points
     ]
-    query = "[out:json][timeout:60];(" + "".join(clauses) + ");out body;"
+    query = "[out:json][timeout:25];(" + "".join(clauses) + ");out body;"
     response = requests.post(
-        "https://overpass-api.de/api/interpreter",
+        os.getenv("OVERPASS_URL", "https://overpass-api.de/api/interpreter"),
         data={"data": query},
         headers={"User-Agent": "TadejAPI/0.1"},
-        timeout=120,
+        timeout=30,
     )
     response.raise_for_status()
 
