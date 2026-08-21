@@ -1,0 +1,1 @@
+"""Clients des services externes utilisés par l'API."""
