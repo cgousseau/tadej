@@ -12,7 +12,13 @@ from app.services import water, weather
 
 
 app = FastAPI(title="Tadej API", version="0.1.0")
+logging.getLogger("app").setLevel(logging.INFO)
 logger = logging.getLogger(__name__)
+
+
+@app.on_event("startup")
+async def log_startup() -> None:
+    logger.info("Tadej API started")
 
 task_ids = count(1)
 tasks: dict[int, "Task"] = {}
