@@ -16,7 +16,7 @@ def query_overpass_water(points: list[dict[str, float]], radius_m: int) -> list[
     ]
     query = "[out:json][timeout:25];(" + "".join(clauses) + ");out body;"
     overpass_url = os.getenv(
-        "OVERPASS_URL", "https://overpass.kumi.systems/api/interpreter"
+        "OVERPASS_URL", "https://overpass-api.de/api/interpreter"
     )
     started_at = perf_counter()
     logger.info("Overpass request started: points=%d radius_m=%d url=%s", len(points), radius_m, overpass_url)

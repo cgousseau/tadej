@@ -31,7 +31,7 @@ L'API est disponible sur http://127.0.0.1:8000. La documentation interactive est
 
 ### Déploiement sur Render
 
-Le fichier `render.yaml` configure automatiquement la commande de démarrage et le port fourni par Render. L'instance Overpass utilisée par défaut est `https://overpass.kumi.systems/api/interpreter`. Pour utiliser une autre instance, définir la variable d'environnement `OVERPASS_URL` avec son URL `/api/interpreter`.
+Le fichier `render.yaml` configure automatiquement la commande de démarrage et le port fourni par Render. En local, l'instance Overpass utilisée par défaut est `https://overpass-api.de/api/interpreter`. Sur Render, définir `OVERPASS_URL` avec une instance accessible depuis Render, par exemple `https://overpass.kumi.systems/api/interpreter`.
 
 ## Routes
 
