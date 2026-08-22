@@ -37,6 +37,30 @@ def haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     return 2 * earth_radius_km * math.asin(math.sqrt(value))
 
 
+def bearing_degrees(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+    latitude_1, latitude_2 = math.radians(lat1), math.radians(lat2)
+    delta_longitude = math.radians(lon2 - lon1)
+    direction = math.atan2(
+        math.sin(delta_longitude) * math.cos(latitude_2),
+        math.cos(latitude_1) * math.sin(latitude_2)
+        - math.sin(latitude_1) * math.cos(latitude_2) * math.cos(delta_longitude),
+    )
+    return (math.degrees(direction) + 360) % 360
+
+
+def route_bearings(route: list[dict[str, float]]) -> list[dict[str, float]]:
+    return [
+        {
+            "lat": start["lat"],
+            "lon": start["lon"],
+            "bearing_deg": bearing_degrees(
+                start["lat"], start["lon"], end["lat"], end["lon"]
+            ),
+        }
+        for start, end in zip(route, route[1:])
+    ]
+
+
 def load_route(gpx_content: bytes, max_distance_km: float | None) -> list[dict[str, float]]:
     gpx = gpxpy.parse(gpx_content.decode("utf-8"))
     points: list[dict[str, float]] = []

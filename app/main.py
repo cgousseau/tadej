@@ -1,6 +1,8 @@
 from itertools import count
 import logging
 from time import perf_counter
+from concurrent.futures import ThreadPoolExecutor
+from fastapi.responses import HTMLResponse
 
 import gpxpy
 import requests
@@ -9,6 +11,8 @@ from pydantic import BaseModel, Field
 
 from app import geography
 from app.services import water, weather
+from app import wind as wind_module
+from app import mapviz
 
 
 app = FastAPI(title="Tadej API", version="0.1.0")
@@ -94,6 +98,39 @@ async def analyze_route(
 @app.get("/health")
 def health() -> dict[str, str]:
     return {"status": "ok"}
+
+
+@app.post("/routes/wind-map", response_class=HTMLResponse)
+async def routes_wind_map(
+    file: UploadFile = File(...),
+    every_km: float = 5.0,
+    max_distance_km: float | None = 100.0,
+) -> HTMLResponse:
+    """Generate an HTML map showing wind impact along the sampled route."""
+    if every_km <= 0 or (max_distance_km is not None and max_distance_km <= 0):
+        raise HTTPException(status_code=400, detail="Les paramètres numériques doivent être positifs")
+    try:
+        gpx_content = await file.read()
+        route = geography.load_route(gpx_content, max_distance_km)
+        sampled_route = geography.sample_route(route, every_km)
+        orientations = geography.route_bearings(sampled_route)
+
+        # Fetch weather for sampled points (one per orientation)
+        weather_values = []
+        with ThreadPoolExecutor(max_workers=4) as executor:
+            for o, w in zip(orientations, executor.map(lambda p: weather.get_weather(p["lat"], p["lon"]), sampled_route[:-1])):
+                # zip orientations with weather results
+                weather_values.append(w)
+
+        sampled_orientations = [ {**o, "weather": w} for o, w in zip(orientations, weather_values) ]
+
+        impacted = wind_module.compute_route_impacts(sampled_orientations)
+        m = mapviz.create_wind_map(impacted, route_points=sampled_route)
+        html = mapviz.map_to_html(m)
+        return HTMLResponse(content=html, status_code=200)
+    except Exception as exc:
+        logger.exception("Wind map generation failed")
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
 
 
 @app.get("/tasks", response_model=list[Task])
